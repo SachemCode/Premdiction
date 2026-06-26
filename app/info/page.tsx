@@ -7,35 +7,37 @@ import { isWcEventEnabled } from "@/lib/competition-config"
 export default function InfoPage() {
   const wcEventEnabled = isWcEventEnabled()
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Information</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Information</h1>
         <p className="text-muted-foreground">Everything you need to know about {APP_NAME}</p>
       </div>
 
-      <Tabs defaultValue="rules" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="rules" className="flex items-center gap-2">
-            <Scale className="h-4 w-4" />
-            Rules
-          </TabsTrigger>
-          <TabsTrigger value="scoring" className="flex items-center gap-2">
-            <Trophy className="h-4 w-4" />
-            Scoring
-          </TabsTrigger>
-          <TabsTrigger value="pointers" className="flex items-center gap-2">
-            <Target className="h-4 w-4" />
-            Pointers
-          </TabsTrigger>
-          <TabsTrigger value="faq" className="flex items-center gap-2">
-            <HelpCircle className="h-4 w-4" />
-            FAQ
-          </TabsTrigger>
-          <TabsTrigger value="about" className="flex items-center gap-2">
-            <Info className="h-4 w-4" />
-            About
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="rules" className="space-y-4 min-w-0">
+        <div className="-mx-4 px-4 overflow-x-auto scrollbar-none md:mx-0 md:px-0">
+          <TabsList className="inline-flex w-max min-w-full md:w-auto h-auto flex-nowrap">
+            <TabsTrigger value="rules" className="flex items-center gap-2 shrink-0">
+              <Scale className="h-4 w-4" />
+              Rules
+            </TabsTrigger>
+            <TabsTrigger value="scoring" className="flex items-center gap-2 shrink-0">
+              <Trophy className="h-4 w-4" />
+              Scoring
+            </TabsTrigger>
+            <TabsTrigger value="pointers" className="flex items-center gap-2 shrink-0">
+              <Target className="h-4 w-4" />
+              Pointers
+            </TabsTrigger>
+            <TabsTrigger value="faq" className="flex items-center gap-2 shrink-0">
+              <HelpCircle className="h-4 w-4" />
+              FAQ
+            </TabsTrigger>
+            <TabsTrigger value="about" className="flex items-center gap-2 shrink-0">
+              <Info className="h-4 w-4" />
+              About
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="rules" className="space-y-4">
           <Card className="pl-card">

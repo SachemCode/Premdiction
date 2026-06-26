@@ -85,7 +85,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
   }
 
   /* Light mode background */
@@ -101,7 +101,7 @@
     background-color: #1a0c2b;
     background-image: url("/pl-zigzag-stripes-dark.svg");
     background-attachment: fixed;
-    background-size: 320px 320px;
+    background-size: 400px 400px;
   }
 }
 
@@ -259,6 +259,7 @@
   .dark .pl-zigzag-bg {
     background-color: #1a0c2b;
     background-image: url("/pl-zigzag-stripes-dark.svg");
+    background-size: 400px 400px;
   }
 
   .scrollbar-none {
