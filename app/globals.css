@@ -1,0 +1,272 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode (default) */
+    --background: 280 30% 96%;
+    --foreground: 280 60% 23%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 280 60% 23%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 280 60% 23%;
+
+    --primary: 280 60% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 180 100% 51%;
+    --secondary-foreground: 280 60% 23%;
+
+    --muted: 280 10% 92%;
+    --muted-foreground: 280 20% 40%;
+
+    --accent: 152 100% 50%;
+    --accent-foreground: 280 60% 23%;
+
+    --destructive: 336 100% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 280 20% 90%;
+    --input: 280 20% 90%;
+    --ring: 280 60% 40%;
+
+    --radius: 0.5rem;
+
+    --chart-1: 280 60% 40%;
+    --chart-2: 180 100% 51%;
+    --chart-3: 152 100% 50%;
+    --chart-4: 336 100% 58%;
+    --chart-5: 0 0% 100%;
+  }
+
+  .dark {
+    /* Dark mode */
+    --background: 270 40% 12%;
+    --foreground: 0 0% 100%;
+
+    --card: 270 40% 15%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 270 40% 15%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 152 100% 50%;
+    --primary-foreground: 270 60% 23%;
+
+    --secondary: 180 100% 51%;
+    --secondary-foreground: 270 60% 23%;
+
+    --muted: 270 30% 20%;
+    --muted-foreground: 270 20% 70%;
+
+    --accent: 270 50% 30%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 336 80% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 270 30% 20%;
+    --input: 270 30% 20%;
+    --ring: 152 100% 50%;
+
+    --chart-1: 152 100% 50%;
+    --chart-2: 180 100% 51%;
+    --chart-3: 270 60% 40%;
+    --chart-4: 336 100% 58%;
+    --chart-5: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Light mode background */
+  body {
+    background-image: url("/pl-stripes.svg");
+    background-attachment: fixed;
+    background-size: cover;
+  }
+
+  /* Dark mode background */
+  .dark body {
+    background-image: url("/pl-pattern.svg");
+    background-attachment: fixed;
+    background-size: cover;
+  }
+}
+
+@layer components {
+  .pl-card {
+    @apply relative overflow-hidden border rounded-lg shadow-sm;
+  }
+
+  .pl-card::before {
+    content: "";
+    @apply absolute top-0 left-0 w-full h-1 bg-pl-gradient;
+  }
+
+  .pl-card-alt::before {
+    @apply bg-pl-gradient-alt;
+  }
+
+  .pl-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+
+  .pl-badge-purple {
+    @apply bg-pl-purple text-pl-white;
+  }
+
+  .pl-badge-green {
+    @apply bg-pl-green text-pl-purple;
+  }
+
+  .pl-badge-cyan {
+    @apply bg-pl-cyan text-pl-purple;
+  }
+
+  .pl-badge-red {
+    @apply bg-pl-red text-pl-white;
+  }
+
+  .pl-button {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .pl-button-primary {
+    @apply bg-pl-purple text-pl-white hover:bg-pl-purple/90;
+  }
+
+  .pl-button-secondary {
+    @apply bg-pl-cyan text-pl-purple hover:bg-pl-cyan/90;
+  }
+
+  .pl-button-accent {
+    @apply bg-pl-green text-pl-purple hover:bg-pl-green/90;
+  }
+
+  .pl-button-destructive {
+    @apply bg-pl-red text-pl-white hover:bg-pl-red/90;
+  }
+
+  .pl-button-outline {
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .pl-gradient-text {
+    @apply text-transparent bg-clip-text bg-pl-gradient font-bold;
+  }
+
+  .pl-gradient-text-alt {
+    @apply text-transparent bg-clip-text bg-pl-gradient-alt font-bold;
+  }
+
+  .pl-nav-link {
+    @apply relative px-2 py-1 text-sm font-medium transition-colors hover:text-foreground/80;
+  }
+
+  .pl-nav-link::after {
+    content: "";
+    @apply absolute left-0 bottom-0 h-0.5 w-0 bg-pl-gradient transition-all duration-300;
+  }
+
+  .pl-nav-link:hover::after {
+    @apply w-full;
+  }
+
+  .pl-nav-link-active::after {
+    @apply w-full;
+  }
+
+  .trend-up {
+    @apply text-green-600 dark:text-green-400;
+  }
+
+  .trend-down {
+    @apply text-red-600 dark:text-red-400;
+  }
+
+  .match-info-link {
+    @apply text-sm text-pl-purple hover:text-pl-purple/80 underline flex items-center gap-1;
+  }
+
+  .fixture-card {
+    @apply p-4 border rounded-lg bg-white dark:bg-gray-800 shadow-sm;
+  }
+
+  .fixture-meta {
+    @apply flex items-center gap-2 text-xs text-muted-foreground;
+  }
+
+  /* Light/Dark mode specific styles */
+  .light-mode-header {
+    @apply bg-white border-b border-pl-lavender;
+  }
+
+  .dark-mode-header {
+    @apply bg-pl-purple text-white;
+  }
+
+  .light-mode-hero {
+    @apply bg-pl-lavender-stripes;
+  }
+
+  .dark-mode-hero {
+    @apply bg-pl-gradient opacity-10;
+  }
+
+  .game-card {
+    @apply relative overflow-hidden rounded-2xl border bg-card shadow-sm;
+  }
+
+  .game-card::before {
+    content: "";
+    @apply absolute top-0 left-0 w-full h-1 bg-pl-gradient;
+  }
+
+  .game-surface {
+    @apply rounded-2xl border bg-white/80 dark:bg-pl-purple/20 backdrop-blur-sm;
+  }
+
+  .wc-event-shell {
+    @apply -mx-4 px-4 py-6 md:-mx-6 md:px-6 md:py-8 rounded-none md:rounded-2xl;
+    min-height: calc(100vh - 12rem);
+    background: linear-gradient(180deg, #fef3c7 0%, #fde68a 45%, #fbbf24 100%);
+  }
+
+  .dark .wc-event-shell {
+    background: linear-gradient(180deg, #92400e 0%, #b45309 40%, #d97706 100%);
+  }
+
+  .wc-event-card {
+    @apply rounded-2xl border border-green-900/30 bg-green-950/90 text-green-50 shadow-md;
+  }
+
+  .wc-event-banner {
+    @apply rounded-xl border border-green-900/25 bg-green-950/85 text-green-50 px-4 py-3 text-sm;
+  }
+
+  .dark .wc-event-banner {
+    @apply border-green-100/20 bg-green-950/90 text-green-50;
+  }
+
+  .wc-btn-primary {
+    @apply bg-green-900 hover:bg-green-900/90 text-white;
+  }
+
+  .wc-btn-outline {
+    @apply border-green-900/50 text-green-950 hover:bg-green-900/15 bg-green-950/5;
+  }
+
+  .dark .wc-btn-outline {
+    @apply border-green-100/40 text-green-50 hover:bg-green-900/40 bg-green-950/30;
+  }
+}

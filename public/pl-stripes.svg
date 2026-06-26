@@ -1,0 +1,37 @@
+<svg width="1440" height="800" viewBox="0 0 1440 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF2882" />
+      <stop offset="100%" stop-color="#04F5FF" />
+    </linearGradient>
+  </defs>
+  <g opacity="0.1">
+    <path d="M-400 800 L1840 800 L1840 700 L-400 700 Z" fill="#3D185C" />
+    <path d="M-400 700 L1840 700 L1840 620 L-400 620 Z" fill="url(#gradient1)" />
+    <path d="M-400 620 L1840 620 L1840 560 L-400 560 Z" fill="#3D185C" />
+    <path d="M-400 560 L1840 560 L1840 510 L-400 510 Z" fill="url(#gradient1)" />
+    <path d="M-400 510 L1840 510 L1840 470 L-400 470 Z" fill="#3D185C" />
+    <path d="M-400 470 L1840 470 L1840 440 L-400 440 Z" fill="url(#gradient1)" />
+    <path d="M-400 440 L1840 440 L1840 410 L-400 410 Z" fill="#3D185C" />
+    <path d="M-400 410 L1840 410 L1840 390 L-400 390 Z" fill="url(#gradient1)" />
+    <path d="M-400 390 L1840 390 L1840 370 L-400 370 Z" fill="#3D185C" />
+    <path d="M-400 370 L1840 370 L1840 350 L-400 350 Z" fill="url(#gradient1)" />
+    <path d="M-400 350 L1840 350 L1840 330 L-400 330 Z" fill="#3D185C" />
+    <path d="M-400 330 L1840 330 L1840 310 L-400 310 Z" fill="url(#gradient1)" />
+    <path d="M-400 310 L1840 310 L1840 290 L-400 290 Z" fill="#3D185C" />
+    <path d="M-400 290 L1840 290 L1840 270 L-400 270 Z" fill="url(#gradient1)" />
+    <path d="M-400 270 L1840 270 L1840 250 L-400 250 Z" fill="#3D185C" />
+    <path d="M-400 250 L1840 250 L1840 230 L-400 230 Z" fill="url(#gradient1)" />
+    <path d="M-400 230 L1840 230 L1840 210 L-400 210 Z" fill="#3D185C" />
+    <path d="M-400 210 L1840 210 L1840 190 L-400 190 Z" fill="url(#gradient1)" />
+    <path d="M-400 190 L1840 190 L1840 170 L-400 170 Z" fill="#3D185C" />
+    <path d="M-400 170 L1840 170 L1840 150 L-400 150 Z" fill="url(#gradient1)" />
+    <path d="M-400 150 L1840 150 L1840 130 L-400 130 Z" fill="#3D185C" />
+    <path d="M-400 130 L1840 130 L1840 110 L-400 110 Z" fill="url(#gradient1)" />
+    <path d="M-400 110 L1840 110 L1840 90 L-400 90 Z" fill="#3D185C" />
+    <path d="M-400 90 L1840 90 L1840 70 L-400 70 Z" fill="url(#gradient1)" />
+    <path d="M-400 70 L1840 70 L1840 50 L-400 50 Z" fill="#3D185C" />
+    <path d="M-400 50 L1840 50 L1840 30 L-400 30 Z" fill="url(#gradient1)" />
+    <path d="M-400 30 L1840 30 L1840 0 L-400 0 Z" fill="#3D185C" />
+  </g>
+</svg>
