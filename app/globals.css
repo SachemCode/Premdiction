@@ -216,6 +216,39 @@
     @apply h-1;
   }
 
+  .pl-bottom-nav {
+    @apply bg-[#241038] text-white;
+  }
+
+  .dark .pl-bottom-nav {
+    @apply bg-[#1a0c2b];
+  }
+
+  .pl-bottom-nav-item {
+    @apply relative flex flex-col items-center justify-center gap-0.5 min-h-11 text-xs font-medium text-white/70 transition-colors hover:text-white;
+  }
+
+  .pl-bottom-nav-item::before {
+    content: "";
+    @apply absolute left-2 right-2 top-0 h-0 bg-white transition-all duration-200;
+  }
+
+  .pl-bottom-nav-item-active {
+    @apply text-white font-semibold;
+  }
+
+  .pl-bottom-nav-item-active::before {
+    @apply h-1;
+  }
+
+  .pl-bottom-nav-item-wc-active {
+    @apply text-amber-200 font-semibold;
+  }
+
+  .pl-bottom-nav-item-wc-active::before {
+    @apply h-1 bg-amber-200;
+  }
+
   .pl-zigzag-bg {
     background-color: #e8dfee;
     background-image: url("/pl-zigzag-stripes.svg");

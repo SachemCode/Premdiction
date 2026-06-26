@@ -6,15 +6,18 @@ import { Home, Calendar, Trophy, User, LogIn } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-provider"
 
-const wcActiveBg =
-  "bg-[linear-gradient(to_right,#14532d_0%,#14532d_10%,#ca8a04_10%,#eab308_50%,#ca8a04_90%,#14532d_90%,#14532d_100%)]"
-
 type NavItem = {
   href: string
   label: string
   icon: typeof Home
   match: (p: string) => boolean
   isWc?: boolean
+}
+
+function bottomNavItemClass(active: boolean, isWc?: boolean) {
+  if (!active) return "pl-bottom-nav-item"
+  if (isWc) return "pl-bottom-nav-item pl-bottom-nav-item-wc-active"
+  return "pl-bottom-nav-item pl-bottom-nav-item-active"
 }
 
 export default function BottomNav({ wcEventEnabled = false }: { wcEventEnabled?: boolean }) {
@@ -67,32 +70,25 @@ export default function BottomNav({ wcEventEnabled = false }: { wcEventEnabled?:
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t bg-white/95 backdrop-blur-sm dark:bg-pl-purple/95 pb-[env(safe-area-inset-bottom)]"
+      className="pl-bottom-nav fixed bottom-0 left-0 right-0 z-50 md:hidden pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_12px_rgba(0,0,0,0.15)]"
       aria-label="Main navigation"
     >
-      <div className={`grid h-16`} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+      <div className="h-0.5 w-full bg-pl-nav-hero" />
+      <div className="grid h-16" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
         {navItems.map(({ href, label, icon: Icon, match, isWc }) => {
           const active = match(pathname)
           return (
             <Link
               key={href}
               href={href}
-              className={cn(
-                "flex flex-col items-center justify-center gap-0.5 min-h-11 text-xs font-medium transition-colors",
-                isWc && active
-                  ? cn(wcActiveBg, "text-green-950")
-                  : active
-                    ? "text-pl-purple dark:text-pl-green"
-                    : "text-muted-foreground hover:text-foreground"
-              )}
+              className={bottomNavItemClass(active, isWc)}
             >
-              <Icon className={cn("h-5 w-5", active && !isWc && "scale-110")} />
+              <Icon className={cn("h-5 w-5", active && "scale-110")} />
               <span className="truncate max-w-full px-0.5">{label}</span>
             </Link>
           )
         })}
       </div>
-      <div className="h-0.5 w-full bg-pl-gradient" />
     </nav>
   )
 }

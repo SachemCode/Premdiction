@@ -44,7 +44,7 @@ export default function Navbar({ wcEventEnabled = false }: { wcEventEnabled?: bo
   return (
     <header className="sticky top-0 z-50 shadow-md">
       {/* Brand bar — gradient hero strip */}
-      <div className="relative h-12 md:h-14 overflow-hidden bg-pl-nav-hero">
+      <div className="relative h-14 md:h-16 overflow-hidden bg-pl-nav-hero">
         <div
           className="pointer-events-none absolute inset-y-0 right-0 w-1/2 md:w-2/5 opacity-30"
           aria-hidden
@@ -54,9 +54,9 @@ export default function Navbar({ wcEventEnabled = false }: { wcEventEnabled?: bo
           }}
         />
         <div className="relative container mx-auto flex h-full items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 shrink-0 min-w-0">
-            <BrandLogo variant="nav" source="badge" className="h-8 w-8 md:h-9 md:w-9" />
-            <span className="text-sm sm:text-xl font-bold text-pl-purple dark:text-white truncate max-w-[8rem] sm:max-w-none">
+          <Link href="/" className="flex items-center gap-2.5 md:gap-3 shrink-0 min-w-0">
+            <BrandLogo variant="nav" source="badge" className="h-9 w-9 md:h-10 md:w-10" />
+            <span className="text-2xl md:text-3xl font-bold tracking-tight leading-none text-pl-purple dark:text-white truncate">
               {APP_NAME}
             </span>
           </Link>
