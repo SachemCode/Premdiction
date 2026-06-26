@@ -10,6 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import type { PrivateLeagueSummary } from "@/lib/private-leagues"
+import { canUseLeagues } from "@/lib/feature-access"
+import { useAuth } from "@/lib/auth-provider"
 import { cn } from "@/lib/utils"
 
 type LeaderboardContextSwitcherProps = {
@@ -25,8 +27,14 @@ export function LeaderboardContextSwitcher({
 }: LeaderboardContextSwitcherProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { user } = useAuth()
+  const leaguesEnabled = canUseLeagues(user)
 
   const value = currentLeagueId ?? "world"
+
+  if (!leaguesEnabled) {
+    return null
+  }
 
   const handleChange = (next: string) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "")

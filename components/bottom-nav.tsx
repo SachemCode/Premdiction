@@ -50,7 +50,7 @@ export default function BottomNav({ wcEventEnabled = false }: { wcEventEnabled?:
       href: "/leaderboard",
       label: "Rankings",
       icon: Trophy,
-      match: (p) => p.startsWith("/leaderboard") || p.startsWith("/leagues"),
+      match: (p) => p.startsWith("/leaderboard"),
     },
     ...(wcEventEnabled
       ? [

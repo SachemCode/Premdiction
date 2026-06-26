@@ -8,6 +8,7 @@ import {
   saveUserPointerSelectionsInDb,
 } from "@/lib/pointers-store"
 import { requireUser } from "@/lib/auth"
+import { canUsePlFeatures } from "@/lib/feature-access"
 import {
   bothKnockoutTeamsKnown,
   getFirstKickoff,
@@ -17,12 +18,25 @@ import {
   SCORE_INPUT_MAX,
 } from "@/lib/prediction-window"
 
-async function assertPredictionWindowOpen(matchId: string) {
+async function getMatchCompetition(matchId: string) {
   const match = await getMatch(matchId)
   if (!match) throw new Error("Match not found")
 
   const matchweek = await getMatchweek(match.matchweekId)
   if (!matchweek) throw new Error("Matchweek not found")
+
+  return { match, matchweek }
+}
+
+async function assertPlPredictionAllowed(user: { isAdmin: boolean }, matchId: string) {
+  const { matchweek } = await getMatchCompetition(matchId)
+  if (matchweek.competition === "PL" && !canUsePlFeatures(user)) {
+    throw new Error("PL predictions are not open during the World Cup beta")
+  }
+}
+
+async function assertPredictionWindowOpen(matchId: string) {
+  const { match, matchweek } = await getMatchCompetition(matchId)
 
   if (matchweek.competition === "WC") {
     const bothTeamsKnown = bothKnockoutTeamsKnown(match.homeTeamId, match.awayTeamId)
@@ -61,6 +75,7 @@ export async function savePredictionAction(data: {
     throw new Error("Both home and away scores are required and must be between 0 and 1000")
   }
 
+  await assertPlPredictionAllowed(user, data.matchId)
   await assertPredictionWindowOpen(data.matchId)
 
   const prediction = await savePrediction({
@@ -86,6 +101,7 @@ export async function saveUserPointerSelectionsAction(data: {
 }) {
   const user = await requireUser()
 
+  await assertPlPredictionAllowed(user, data.matchId)
   await assertPredictionWindowOpen(data.matchId)
 
   const selection = await saveUserPointerSelectionsInDb(

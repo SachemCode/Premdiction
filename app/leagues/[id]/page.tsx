@@ -12,6 +12,8 @@ import { getPrivateLeagueLeaderboardData } from "@/lib/db"
 import { isWcEventEnabled, type CompetitionCode } from "@/lib/competition-config"
 import { isUserInPrivateLeague } from "@/lib/private-leagues"
 import { ArrowLeft } from "lucide-react"
+import { canUseLeagues } from "@/lib/feature-access"
+import { AdminPreviewOnly } from "@/components/admin-preview-only"
 
 export default async function LeagueDetailPage({
   params,
@@ -27,6 +29,15 @@ export default async function LeagueDetailPage({
         title="League"
         description="Sign in to view this league"
         returnTo={`/leagues/${params.id}`}
+      />
+    )
+  }
+
+  if (!canUseLeagues(user)) {
+    return (
+      <AdminPreviewOnly
+        title="Leagues — coming soon"
+        description="Private leagues are in admin preview during the World Cup beta."
       />
     )
   }

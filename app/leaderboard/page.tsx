@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { AuthRequiredPrompt } from "@/components/auth-required-prompt"
 import {
   getVisibleLeaderboardMatchweeks,
@@ -16,6 +16,7 @@ import {
   isUserInPrivateLeague,
 } from "@/lib/private-leagues"
 import type { CompetitionCode } from "@/lib/competition-config"
+import { canUseLeagues } from "@/lib/feature-access"
 
 export default async function LeaderboardPage({
   searchParams,
@@ -33,10 +34,15 @@ export default async function LeaderboardPage({
     )
   }
 
-  const leagues = await getPrivateLeaguesForUser(user.id)
+  const leaguesEnabled = canUseLeagues(user)
+  const leagues = leaguesEnabled ? await getPrivateLeaguesForUser(user.id) : []
   const leagueId = searchParams.league?.trim()
 
   if (leagueId) {
+    if (!leaguesEnabled) {
+      redirect("/leaderboard")
+    }
+
     const league = await getPrivateLeagueById(leagueId)
     if (!league) notFound()
 
@@ -121,7 +127,7 @@ export default async function LeaderboardPage({
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">World Rankings</h1>
           <p className="text-muted-foreground">Premier League season standings — all players</p>
         </div>
-        {leagues.length > 0 && (
+        {leaguesEnabled && leagues.length > 0 && (
           <Suspense fallback={null}>
             <LeaderboardContextSwitcher leagues={leagues} />
           </Suspense>

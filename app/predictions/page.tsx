@@ -84,7 +84,7 @@ export default async function PredictionsPage() {
 
       <MatchweekHeader matchweek={currentMatchweek} competition="PL" />
 
-      <MatchweekPredictions matchweekData={matchweekData} showPointers />
+      <MatchweekPredictions matchweekData={matchweekData} showPointers readOnly={!user.isAdmin} />
     </div>
   )
 }

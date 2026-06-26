@@ -8,6 +8,8 @@ import { getSessionUser } from "@/lib/auth"
 import { getPrivateLeaguesForUser } from "@/lib/private-leagues"
 import { isWcEventEnabled } from "@/lib/competition-config"
 import { Users, Trophy } from "lucide-react"
+import { canUseLeagues } from "@/lib/feature-access"
+import { AdminPreviewOnly } from "@/components/admin-preview-only"
 
 export default async function LeaguesPage() {
   const user = await getSessionUser()
@@ -17,6 +19,15 @@ export default async function LeaguesPage() {
         title="My Leagues"
         description="Create a league and invite friends to compete"
         returnTo="/leagues"
+      />
+    )
+  }
+
+  if (!canUseLeagues(user)) {
+    return (
+      <AdminPreviewOnly
+        title="Leagues — coming soon"
+        description="Private leagues are in admin preview during the World Cup beta. Use the WC Event to play with friends for now."
       />
     )
   }

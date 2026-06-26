@@ -152,14 +152,16 @@ export default function Navbar({ wcEventEnabled = false }: { wcEventEnabled?: bo
           >
             Rankings
           </Link>
-          <Link
-            href="/leagues"
-            className={navLinkClass(
-              (pathname?.startsWith("/leagues") || pathname?.startsWith("/join")) ?? false
-            )}
-          >
-            Leagues
-          </Link>
+          {user?.isAdmin && (
+            <Link
+              href="/leagues"
+              className={navLinkClass(
+                (pathname?.startsWith("/leagues") || pathname?.startsWith("/join")) ?? false
+              )}
+            >
+              Leagues
+            </Link>
+          )}
           {wcEventEnabled && (
             <WorldCupEntryLink
               variant="nav"

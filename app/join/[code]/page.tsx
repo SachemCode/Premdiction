@@ -5,6 +5,8 @@ import { JoinLeagueForm } from "@/components/join-league-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getSessionUser } from "@/lib/auth"
 import { joinPrivateLeagueByCode } from "@/lib/private-leagues"
+import { canUseLeagues } from "@/lib/feature-access"
+import { AdminPreviewOnly } from "@/components/admin-preview-only"
 
 export default async function JoinLeaguePage({
   params,
@@ -31,6 +33,15 @@ export default async function JoinLeaguePage({
           returnTo={`/join/${code}`}
         />
       </div>
+    )
+  }
+
+  if (!canUseLeagues(user)) {
+    return (
+      <AdminPreviewOnly
+        title="Leagues — coming soon"
+        description="Joining private leagues is not open during the World Cup beta."
+      />
     )
   }
 

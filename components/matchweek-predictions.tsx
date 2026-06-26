@@ -91,10 +91,12 @@ export default function MatchweekPredictions({
   matchweekData,
   showPointers = true,
   competition = "PL",
+  readOnly = false,
 }: {
   matchweekData: MatchweekData
   showPointers?: boolean
   competition?: CompetitionCode
+  readOnly?: boolean
 }) {
   const { user } = useAuth()
   const { toast } = useToast()
@@ -125,7 +127,7 @@ export default function MatchweekPredictions({
     () => getPredictionWindowStatus(new Date(), window),
     [window]
   )
-  const windowOpen = windowStatus === "open"
+  const windowOpen = windowStatus === "open" && !readOnly
 
   const editableMatches = matchweekData.matches.filter((m) => m.status !== "completed")
   const editableMatchIds = editableMatches.map((m) => m.id)
@@ -257,6 +259,16 @@ export default function MatchweekPredictions({
 
   return (
     <div className="space-y-4">
+      {readOnly && competition === "PL" && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>
+            View only during World Cup beta — PL predictions are open for admins. Use the WC Event to
+            make predictions.
+          </span>
+        </div>
+      )}
+
       <div
         className={`rounded-xl border px-4 py-3 text-sm flex items-center gap-2 ${windowBannerClass(windowStatus)}`}
       >
@@ -329,7 +341,7 @@ export default function MatchweekPredictions({
         matchweekData.matches.map((match) => {
           const prediction = predictions[match.id] || { homeScore: null, awayScore: null }
           const isCompleted = match.status === "completed"
-          const canEdit = windowOpen && !isCompleted
+          const canEdit = windowOpen && !isCompleted && !readOnly
           const complete = isPredictionComplete(prediction)
 
           const kickoffDate = new Date(match.kickoff)
@@ -540,7 +552,7 @@ export default function MatchweekPredictions({
                     </div>
                   )}
 
-                  {showPointers && (
+                  {showPointers && !readOnly && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -554,7 +566,7 @@ export default function MatchweekPredictions({
                 </div>
               </div>
 
-              {showPointers && expandedPointers[match.id] && (
+              {showPointers && !readOnly && expandedPointers[match.id] && (
                 <MatchPointersSelector
                   matchId={match.id}
                   homeTeam={match.homeTeam}
