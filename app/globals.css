@@ -98,9 +98,10 @@
 
   /* Dark mode background */
   .dark body {
-    background-image: url("/pl-pattern.svg");
+    background-color: #1a0c2b;
+    background-image: url("/pl-zigzag-stripes-dark.svg");
     background-attachment: fixed;
-    background-size: cover;
+    background-size: 320px 320px;
   }
 }
 
@@ -255,6 +256,11 @@
     background-size: 320px 320px;
   }
 
+  .dark .pl-zigzag-bg {
+    background-color: #1a0c2b;
+    background-image: url("/pl-zigzag-stripes-dark.svg");
+  }
+
   .scrollbar-none {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -298,7 +304,7 @@
   }
 
   .dark-mode-hero {
-    @apply bg-pl-gradient opacity-10;
+    @apply pl-zigzag-bg;
   }
 
   .game-card {

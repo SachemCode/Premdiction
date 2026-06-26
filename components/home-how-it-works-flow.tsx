@@ -35,7 +35,7 @@ const steps: Step[] = [
 
 function StepCard({ step, title, icon: Icon, iconColor, iconBg }: Step) {
   return (
-    <div className="flex flex-col items-center p-6 bg-white dark:bg-pl-purple/20 rounded-xl shadow-md w-full md:flex-1 md:max-w-xs">
+    <div className="flex flex-col items-center p-6 bg-white dark:bg-card border border-border dark:border-border rounded-xl shadow-md w-full md:flex-1 md:max-w-xs">
       <span className="mb-3 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
         {step}
       </span>

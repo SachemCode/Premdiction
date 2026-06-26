@@ -46,7 +46,7 @@ export default function Navbar({ wcEventEnabled = false }: { wcEventEnabled?: bo
       {/* Brand bar — gradient hero strip */}
       <div className="relative h-14 md:h-16 overflow-hidden bg-pl-nav-hero">
         <div
-          className="pointer-events-none absolute inset-y-0 right-0 w-1/2 md:w-2/5 opacity-30"
+          className="pointer-events-none absolute inset-y-0 right-0 w-1/2 md:w-2/5 opacity-30 dark:opacity-20"
           aria-hidden
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 24 L12 12 L24 24 L36 12 L48 24 L48 48 L36 36 L24 48 L12 36 L0 48 Z' fill='%2300FF87' fill-opacity='0.35'/%3E%3C/svg%3E")`,
