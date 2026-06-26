@@ -32,8 +32,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  getPredictionWindow,
-  getPredictionWindowStatus,
+  getKnockoutMatchWindowStatus,
+  bothKnockoutTeamsKnown,
   randomScore,
   SCORE_RANDOM_MAX,
 } from "@/lib/prediction-window"
@@ -87,16 +87,15 @@ function isPredictionComplete(pred: ScorePrediction | undefined): pred is { home
   return pred != null && pred.homeScore !== null && pred.awayScore !== null
 }
 
-function matchCanEdit(match: MatchWithTeams, roundStartDate: Date | string): boolean {
+function matchCanEdit(match: MatchWithTeams): boolean {
   if (match.status === "completed") return false
-  if (isTbdTeam(match.homeTeamId) || isTbdTeam(match.awayTeamId)) return false
-  const window = getPredictionWindow(roundStartDate, match.kickoff)
-  return getPredictionWindowStatus(new Date(), window) === "open"
+  const bothTeamsKnown = bothKnockoutTeamsKnown(match.homeTeamId, match.awayTeamId)
+  return getKnockoutMatchWindowStatus(new Date(), match.kickoff, bothTeamsKnown) === "open"
 }
 
-function getMatchWindowStatus(match: MatchWithTeams, roundStartDate: Date | string) {
-  const window = getPredictionWindow(roundStartDate, match.kickoff)
-  return getPredictionWindowStatus(new Date(), window)
+function getMatchWindowStatus(match: MatchWithTeams) {
+  const bothTeamsKnown = bothKnockoutTeamsKnown(match.homeTeamId, match.awayTeamId)
+  return getKnockoutMatchWindowStatus(new Date(), match.kickoff, bothTeamsKnown)
 }
 
 type WcBracketMatchCardProps = {
@@ -171,7 +170,11 @@ function WcBracketMatchCard({
             </span>
           ) : (
             <span className="text-xs text-green-100/60">
-              {canEdit ? "Tap to predict" : "View match"}
+              {canEdit
+                ? "Tap to predict"
+                : isTbdTeam(match.homeTeamId) || isTbdTeam(match.awayTeamId)
+                  ? "Waiting for teams"
+                  : "View match"}
             </span>
           )}
         </div>
@@ -215,7 +218,6 @@ export default function WcBracketPredictions({ bracketData }: { bracketData: WcB
   const [savedPredictions, setSavedPredictions] = useState(bracketData.userPredictions)
   const [saving, setSaving] = useState<Record<string, boolean>>({})
   const [activeMatchId, setActiveMatchId] = useState<string | null>(null)
-  const [activeRoundStart, setActiveRoundStart] = useState<Date | string | null>(null)
 
   useEffect(() => {
     setSavedPredictions(bracketData.userPredictions)
@@ -233,31 +235,22 @@ export default function WcBracketPredictions({ bracketData }: { bracketData: WcB
   }, [currentRoundIndex, bracketData.rounds.length])
 
   const editableMatches = useMemo(
-    () =>
-      bracketData.rounds.flatMap((round) =>
-        round.matches.filter((m) => matchCanEdit(m, round.startDate))
-      ),
-    [bracketData.rounds]
+    () => allMatches.filter((m) => matchCanEdit(m)),
+    [allMatches]
   )
   const editableMatchIds = editableMatches.map((m) => m.id)
 
   const activeMatch = activeMatchId ? allMatches.find((m) => m.id === activeMatchId) ?? null : null
   const activePrediction = activeMatchId ? predictions[activeMatchId] : undefined
-  const activeCanEdit =
-    activeMatch && activeRoundStart ? matchCanEdit(activeMatch, activeRoundStart) : false
-  const activeWindowStatus =
-    activeMatch && activeRoundStart
-      ? getMatchWindowStatus(activeMatch, activeRoundStart)
-      : "closed"
+  const activeCanEdit = activeMatch ? matchCanEdit(activeMatch) : false
+  const activeWindowStatus = activeMatch ? getMatchWindowStatus(activeMatch) : "closed"
 
-  const openMatchEditor = (matchId: string, roundStart: Date | string) => {
-    setActiveRoundStart(roundStart)
+  const openMatchEditor = (matchId: string) => {
     setActiveMatchId(matchId)
   }
 
   const closeMatchEditor = () => {
     setActiveMatchId(null)
-    setActiveRoundStart(null)
   }
 
   const setMatchScores = (matchId: string, homeScore: number, awayScore: number) => {
@@ -385,8 +378,8 @@ export default function WcBracketPredictions({ bracketData }: { bracketData: WcB
         <AlertTriangle className="h-4 w-4 shrink-0 text-amber-300" />
         <span>
           {openCount > 0
-            ? `${openCount} match${openCount === 1 ? "" : "es"} open — click a match to set your score and pointers`
-            : "No matches open right now — check back when the next round approaches"}
+            ? `${openCount} match${openCount === 1 ? "" : "es"} open — both teams confirmed, predict until 30 min before kickoff`
+            : "No matches open right now — check back when both teams are confirmed for a fixture"}
         </span>
       </div>
 
@@ -461,7 +454,7 @@ export default function WcBracketPredictions({ bracketData }: { bracketData: WcB
                     renderMatch={(match) => {
                       const prediction = predictions[match.id] || { homeScore: null, awayScore: null }
                       const isCompleted = match.status === "completed"
-                      const canEdit = matchCanEdit(match, round.startDate)
+                      const canEdit = matchCanEdit(match)
 
                       return (
                         <WcBracketMatchCard
@@ -471,7 +464,7 @@ export default function WcBracketPredictions({ bracketData }: { bracketData: WcB
                           canEdit={canEdit}
                           isCompleted={isCompleted}
                           isSelected={activeMatchId === match.id}
-                          onOpen={() => openMatchEditor(match.id, round.startDate)}
+                          onOpen={() => openMatchEditor(match.id)}
                         />
                       )
                     }}
@@ -524,7 +517,8 @@ export default function WcBracketPredictions({ bracketData }: { bracketData: WcB
                     {teamDisplayName(activeMatch.homeTeam)} vs {teamDisplayName(activeMatch.awayTeam)}
                   </DialogTitle>
                   <DialogDescription>
-                    Set your 90-minute score prediction and optional pointers
+                    Predict the score after 90 or 120 minutes (extra time). Penalty shootouts are not
+                    included. Pointers close 30 minutes before kickoff.
                   </DialogDescription>
                 </DialogHeader>
                 {matchEditor}

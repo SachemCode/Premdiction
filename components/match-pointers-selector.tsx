@@ -9,10 +9,17 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { getMatchPointers, getUserPointerSelections, type PointerType } from "@/lib/pointers"
+import {
+  getMatchPointers,
+  getKnockoutPointers,
+  type PointerType,
+} from "@/lib/pointers"
 import { Square, Target, Ban, ArrowLeftRight, Hand, Trophy, Medal, AlertTriangle, Check } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { saveUserPointerSelectionsAction } from "@/app/predictions/actions"
+import {
+  getUserPointerSelectionsAction,
+  saveUserPointerSelectionsAction,
+} from "@/app/predictions/actions"
 import type { PredictionWindowStatus } from "@/lib/prediction-window"
 import { cn } from "@/lib/utils"
 
@@ -24,12 +31,13 @@ const pointerIcons: Record<string, React.ReactNode> = {
   goalkeeper_goal: <Hand className="h-4 w-4 text-green-500" />,
   hat_trick: <Trophy className="h-4 w-4 text-amber-500" />,
   motm: <Medal className="h-4 w-4 text-cyan-500" />,
+  penalty_shootout: <Target className="h-4 w-4 text-orange-500" />,
 }
 
 interface MatchPointersSelectorProps {
   matchId: string
-  homeTeam: { name: string; shortName: string; logo?: string }
-  awayTeam: { name: string; shortName: string; logo?: string }
+  homeTeam: { id: string; name: string; shortName: string; logo?: string }
+  awayTeam: { id: string; name: string; shortName: string; logo?: string }
   windowStatus: PredictionWindowStatus
   isActive: boolean
   /** When set, overrides isActive for WC-style window-based gating */
@@ -53,23 +61,41 @@ export default function MatchPointersSelector({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  const pointers = getMatchPointers()
+  const pointers = variant === "wc" ? getKnockoutPointers() : getMatchPointers()
   const windowOpen = windowStatus === "open"
   const pointersEnabled = pointersActive !== undefined ? pointersActive : isActive
   const isWc = variant === "wc"
 
   useEffect(() => {
-    if (user) {
-      const existingSelections = getUserPointerSelections(user.id, matchId)
-      if (existingSelections) {
-        setSelectedPointers(existingSelections.selectedPointers)
-        if (existingSelections.details) {
-          setPointerDetails(existingSelections.details)
-        }
+    let cancelled = false
+
+    async function loadSelections() {
+      if (!user) {
+        setIsLoading(false)
+        return
       }
-      setIsLoading(false)
-    } else {
-      setIsLoading(false)
+
+      setIsLoading(true)
+      try {
+        const existingSelections = await getUserPointerSelectionsAction(matchId)
+        if (cancelled) return
+        if (existingSelections) {
+          setSelectedPointers(existingSelections.selectedPointers)
+          setPointerDetails(existingSelections.details ?? {})
+        }
+      } catch {
+        if (!cancelled) {
+          setSelectedPointers([])
+          setPointerDetails({})
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+
+    void loadSelections()
+    return () => {
+      cancelled = true
     }
   }, [user, matchId])
 
@@ -78,13 +104,20 @@ export default function MatchPointersSelector({
       setSelectedPointers((prev) => [...prev, pointerId])
     } else {
       setSelectedPointers((prev) => prev.filter((id) => id !== pointerId))
+      if (pointerId === "penalty_shootout") {
+        setPointerDetails((prev) => {
+          const next = { ...prev }
+          delete next.penalty_shootout_winner
+          return next
+        })
+      }
     }
   }
 
-  const handleDetailsChange = (pointerId: string, value: string) => {
+  const handleDetailsChange = (key: string, value: string) => {
     setPointerDetails((prev) => ({
       ...prev,
-      [pointerId]: value,
+      [key]: value,
     }))
   }
 
@@ -102,6 +135,18 @@ export default function MatchPointersSelector({
       toast({
         title: "Missing information",
         description: "Please enter a player name for Man of the Match prediction",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (
+      selectedPointers.includes("penalty_shootout") &&
+      !pointerDetails.penalty_shootout_winner
+    ) {
+      toast({
+        title: "Missing information",
+        description: "Please pick which team wins the penalty shootout",
         variant: "destructive",
       })
       return
@@ -155,7 +200,9 @@ export default function MatchPointersSelector({
         <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-amber-500 opacity-50" />
         <p>
           {pointersActive !== undefined
-            ? "Pointers are not available for this match right now"
+            ? isWc
+              ? "Pointers open when both teams are confirmed and until 30 minutes before kickoff"
+              : "Pointers are not available for this match right now"
             : "Pointers are only available for active matchweeks"}
         </p>
       </div>
@@ -166,7 +213,11 @@ export default function MatchPointersSelector({
     return (
       <div className="p-4 text-center text-muted-foreground">
         <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-amber-500 opacity-50" />
-        <p>Pointer selections are not open yet for this matchweek</p>
+        <p>
+          {isWc
+            ? "Waiting for both teams to be confirmed before pointers open"
+            : "Pointer selections are not open yet for this matchweek"}
+        </p>
       </div>
     )
   }
@@ -175,7 +226,11 @@ export default function MatchPointersSelector({
     return (
       <div className="p-4 text-center text-muted-foreground">
         <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-red-500 opacity-50" />
-        <p>The deadline for selecting pointers has passed</p>
+        <p>
+          {isWc
+            ? "The deadline has passed — pointers close 30 minutes before kickoff"
+            : "The deadline for selecting pointers has passed"}
+        </p>
         {selectedPointers.length > 0 && (
           <p className="text-sm mt-2">
             Your selected pointers:{" "}
@@ -255,6 +310,40 @@ export default function MatchPointersSelector({
                     className="h-8 mt-1"
                     disabled={!windowOpen}
                   />
+                </div>
+              )}
+
+              {pointer.id === "penalty_shootout" && selectedPointers.includes("penalty_shootout") && (
+                <div className="mt-2 space-y-2">
+                  <Label className="text-xs">Shootout winner</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={pointerDetails.penalty_shootout_winner === homeTeam.id ? "default" : "outline"}
+                      className={cn(
+                        "flex-1",
+                        pointerDetails.penalty_shootout_winner === homeTeam.id && isWc && "wc-btn-primary"
+                      )}
+                      onClick={() => handleDetailsChange("penalty_shootout_winner", homeTeam.id)}
+                      disabled={!windowOpen}
+                    >
+                      {homeTeam.shortName}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={pointerDetails.penalty_shootout_winner === awayTeam.id ? "default" : "outline"}
+                      className={cn(
+                        "flex-1",
+                        pointerDetails.penalty_shootout_winner === awayTeam.id && isWc && "wc-btn-primary"
+                      )}
+                      onClick={() => handleDetailsChange("penalty_shootout_winner", awayTeam.id)}
+                      disabled={!windowOpen}
+                    >
+                      {awayTeam.shortName}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

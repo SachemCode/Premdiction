@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getMatch, getTeam } from "@/lib/db"
+import { getMatch, getMatchweek, getTeam } from "@/lib/db"
 
 export async function GET(
   _request: Request,
@@ -11,10 +11,16 @@ export async function GET(
     return NextResponse.json({ error: "Match not found" }, { status: 404 })
   }
 
-  const [homeTeam, awayTeam] = await Promise.all([
+  const [homeTeam, awayTeam, matchweek] = await Promise.all([
     getTeam(match.homeTeamId),
     getTeam(match.awayTeamId),
+    getMatchweek(match.matchweekId),
   ])
 
-  return NextResponse.json({ match, homeTeam, awayTeam })
+  return NextResponse.json({
+    match,
+    homeTeam,
+    awayTeam,
+    competition: matchweek?.competition ?? "PL",
+  })
 }

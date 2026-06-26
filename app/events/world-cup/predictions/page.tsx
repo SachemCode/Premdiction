@@ -12,7 +12,7 @@ export default async function WorldCupPredictionsPage() {
     return (
       <AuthRequiredPrompt
         title="Knockout"
-        description="Pick 90-minute scores before kickoff"
+        description="Predict scores after 90 or 120 minutes — both teams must be confirmed, closes 30 min before kickoff"
         returnTo="/events/world-cup/predictions"
       />
     )
@@ -29,7 +29,8 @@ export default async function WorldCupPredictionsPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Knockout</h1>
           <p className="text-green-950/80 dark:text-green-100/80 text-sm md:text-base">
-            Pick 90-minute scores before kickoff
+            Predict scores after 90 or 120 minutes (extra time). Penalty shootouts are not included.
+            Both teams must be confirmed; predictions close 30 minutes before kickoff.
           </p>
         </div>
         <div className="wc-event-card p-8 text-center">
@@ -58,7 +59,7 @@ export default async function WorldCupPredictionsPage() {
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Knockout</h1>
         <p className="text-green-950/80 dark:text-green-100/80 text-sm md:text-base">
-          Tap a match to set your score and pointers — swipe to explore other rounds
+          Tap a match to set your score and pointers — predictions close 30 min before kickoff
         </p>
       </div>
 

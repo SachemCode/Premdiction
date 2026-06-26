@@ -9,11 +9,16 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { getMatchPointers, getMatchPointerOutcomes, type PointerType } from "@/lib/pointers"
+import {
+  getMatchPointers,
+  getKnockoutPointers,
+  getMatchPointerOutcomes,
+  type PointerType,
+} from "@/lib/pointers"
 import { Square, Target, Ban, ArrowLeftRight, Hand, Trophy, Medal } from "lucide-react"
 import { saveMatchPointerOutcomesAction } from "@/app/admin/actions"
+import { cn } from "@/lib/utils"
 
-// Map of pointer IDs to their respective icons
 const pointerIcons: Record<string, React.ReactNode> = {
   red_card: <Square className="h-4 w-4 text-red-500" />,
   penalty_goal: <Target className="h-4 w-4 text-blue-500" />,
@@ -22,17 +27,27 @@ const pointerIcons: Record<string, React.ReactNode> = {
   goalkeeper_goal: <Hand className="h-4 w-4 text-green-500" />,
   hat_trick: <Trophy className="h-4 w-4 text-amber-500" />,
   motm: <Medal className="h-4 w-4 text-cyan-500" />,
+  penalty_shootout: <Target className="h-4 w-4 text-orange-500" />,
 }
 
 interface MatchPointerOutcomesProps {
   matchId: string
+  homeTeam?: { id: string; shortName: string }
+  awayTeam?: { id: string; shortName: string }
+  competition?: string
 }
 
-export default function MatchPointerOutcomes({ matchId }: MatchPointerOutcomesProps) {
+export default function MatchPointerOutcomes({
+  matchId,
+  homeTeam,
+  awayTeam,
+  competition,
+}: MatchPointerOutcomesProps) {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const pointers = getMatchPointers()
+  const pointers = competition === "WC" ? getKnockoutPointers() : getMatchPointers()
+
   const existingOutcomes = getMatchPointerOutcomes(matchId)
 
   const [outcomes, setOutcomes] = useState<
@@ -58,12 +73,21 @@ export default function MatchPointerOutcomes({ matchId }: MatchPointerOutcomesPr
   }
 
   const handleSubmit = async () => {
-    // Validate MOTM has a player name if selected
     const motmOutcome = outcomes.find((o) => o.pointerId === "motm" && o.occurred)
     if (motmOutcome && (!motmOutcome.details || motmOutcome.details.trim() === "")) {
       toast({
         title: "Missing information",
         description: "Please enter a player name for Man of the Match",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const shootoutOutcome = outcomes.find((o) => o.pointerId === "penalty_shootout" && o.occurred)
+    if (shootoutOutcome && !shootoutOutcome.details) {
+      toast({
+        title: "Missing information",
+        description: "Please select the penalty shootout winner",
         variant: "destructive",
       })
       return
@@ -81,7 +105,7 @@ export default function MatchPointerOutcomes({ matchId }: MatchPointerOutcomesPr
         title: "Pointer outcomes saved",
         description: "The pointer outcomes have been saved successfully",
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to save pointer outcomes",
@@ -131,6 +155,43 @@ export default function MatchPointerOutcomes({ matchId }: MatchPointerOutcomesPr
                     />
                   </div>
                 )}
+
+                {pointer.id === "penalty_shootout" &&
+                  outcomes.find((o) => o.pointerId === "penalty_shootout")?.occurred &&
+                  homeTeam &&
+                  awayTeam && (
+                    <div className="mt-2 space-y-2">
+                      <Label className="text-xs">Shootout winner</Label>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={
+                            outcomes.find((o) => o.pointerId === "penalty_shootout")?.details === homeTeam.id
+                              ? "default"
+                              : "outline"
+                          }
+                          className="flex-1"
+                          onClick={() => handleDetailsChange("penalty_shootout", homeTeam.id)}
+                        >
+                          {homeTeam.shortName}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={
+                            outcomes.find((o) => o.pointerId === "penalty_shootout")?.details === awayTeam.id
+                              ? "default"
+                              : "outline"
+                          }
+                          className={cn("flex-1")}
+                          onClick={() => handleDetailsChange("penalty_shootout", awayTeam.id)}
+                        >
+                          {awayTeam.shortName}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
               </div>
             </div>
           ))}

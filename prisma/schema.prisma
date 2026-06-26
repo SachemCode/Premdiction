@@ -109,3 +109,18 @@ model AppSettings {
 
   @@map("app_settings")
 }
+
+model MatchPointerSelection {
+  id               String   @id @default(cuid())
+  userId           String
+  matchId          String
+  selectedPointers String[]
+  details          Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([userId, matchId])
+  @@index([matchId])
+  @@index([userId])
+  @@map("match_pointer_selections")
+}

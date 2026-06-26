@@ -9,6 +9,7 @@ import { getMatchStadium } from "@/lib/match-venue"
 function mapMatchweek(row: {
   id: string
   number: number
+  competition?: string
   startDate: Date
   endDate: Date
   status: string
@@ -17,6 +18,7 @@ function mapMatchweek(row: {
   return {
     id: row.id,
     number: row.number,
+    competition: row.competition,
     startDate: row.startDate,
     endDate: row.endDate,
     status: row.status as Matchweek["status"],

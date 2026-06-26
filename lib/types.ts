@@ -33,6 +33,7 @@ export type Match = {
 export type Matchweek = {
   id: string
   number: number
+  competition?: string
   startDate: Date
   endDate: Date
   status: "upcoming" | "active" | "completed"

@@ -96,11 +96,11 @@ export default function InfoPage() {
                 <div className="flex gap-3 p-4 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-900/20">
                   <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div className="space-y-1 text-sm">
-                    <p className="font-medium">90-minute scores only</p>
+                    <p className="font-medium">90- or 120-minute scores</p>
                     <p className="text-muted-foreground">
-                      Predict the score after 90 minutes of regular time. Extra time and penalty
-                      shootouts are not counted for points — agree on this with your group before
-                      the Round of 32 kicks off.
+                      Predict the score after 90 minutes of regular time, or after extra time (120
+                      minutes) if the match goes there. Penalty shootout goals are never included in
+                      the score — agree on this with your group before the Round of 32 kicks off.
                     </p>
                   </div>
                 </div>

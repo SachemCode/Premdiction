@@ -27,6 +27,7 @@ export default function EnterResultPage({
   const [match, setMatch] = useState<Match | null>(null)
   const [homeTeam, setHomeTeam] = useState<Team | null>(null)
   const [awayTeam, setAwayTeam] = useState<Team | null>(null)
+  const [competition, setCompetition] = useState<string>("PL")
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function EnterResultPage({
         setMatch(data.match)
         setHomeTeam(data.homeTeam)
         setAwayTeam(data.awayTeam)
+        setCompetition(data.competition ?? "PL")
         if (data.match.homeScore !== null) setHomeScore(data.match.homeScore.toString())
         if (data.match.awayScore !== null) setAwayScore(data.match.awayScore.toString())
         setLoading(false)
@@ -185,7 +187,12 @@ export default function EnterResultPage({
         </TabsContent>
 
         <TabsContent value="pointers">
-          <MatchPointerOutcomes matchId={match.id} />
+          <MatchPointerOutcomes
+            matchId={match.id}
+            homeTeam={homeTeam ? { id: homeTeam.id, shortName: homeTeam.shortName } : undefined}
+            awayTeam={awayTeam ? { id: awayTeam.id, shortName: awayTeam.shortName } : undefined}
+            competition={competition}
+          />
         </TabsContent>
       </Tabs>
     </div>

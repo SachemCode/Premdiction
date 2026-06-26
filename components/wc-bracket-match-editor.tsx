@@ -2,13 +2,14 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { ScoreWheelPicker } from "@/components/game/score-wheel-picker"
 import { TeamLogo, isTbdTeam } from "@/components/team-logo"
 import MatchPointersSelector from "@/components/match-pointers-selector"
 import { Dices, Target } from "lucide-react"
 import type { Match, Team } from "@/lib/types"
 import type { PredictionWindowStatus } from "@/lib/prediction-window"
-import { SCORE_WHEEL_MAX } from "@/lib/prediction-window"
+import { SCORE_INPUT_MAX, SCORE_WHEEL_MAX } from "@/lib/prediction-window"
 import { formatBracketKickoff } from "@/lib/date-format"
 
 type ScorePrediction = { homeScore: number | null; awayScore: number | null }
@@ -25,6 +26,13 @@ function teamDisplayName(team: Team): string {
 
 function isPredictionComplete(pred: ScorePrediction | undefined): pred is { homeScore: number; awayScore: number } {
   return pred != null && pred.homeScore !== null && pred.awayScore !== null
+}
+
+function parseScoreInput(value: string): number | null {
+  if (value === "") return null
+  const parsed = Number.parseInt(value, 10)
+  if (Number.isNaN(parsed) || parsed < 0 || parsed > SCORE_INPUT_MAX) return null
+  return parsed
 }
 
 export type WcBracketMatchEditorProps = {
@@ -53,6 +61,19 @@ export function WcBracketMatchEditor({
   const [showPointers, setShowPointers] = useState(false)
   const isCompleted = match.status === "completed"
   const complete = isPredictionComplete(prediction)
+
+  const handleScoreInput = (side: "home" | "away", raw: string) => {
+    const parsed = parseScoreInput(raw)
+    if (parsed === null && raw !== "") return
+    if (side === "home") {
+      if (parsed === null) return
+      onHomeChange(parsed)
+    } else if (parsed === null) {
+      return
+    } else {
+      onAwayChange(parsed)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -84,6 +105,9 @@ export function WcBracketMatchEditor({
       <p className="text-center text-sm text-green-950/70 dark:text-green-100/70">
         {formatBracketKickoff(match.kickoff)}
       </p>
+      <p className="text-center text-xs text-green-950/60 dark:text-green-100/60">
+        Predict the score after 90 or 120 minutes (extra time). Penalty shootouts are not included.
+      </p>
 
       {isCompleted ? (
         <div className="text-center text-2xl font-bold text-green-950 dark:text-green-50 py-4">
@@ -99,6 +123,30 @@ export function WcBracketMatchEditor({
             onHomeChange={onHomeChange}
             onAwayChange={onAwayChange}
           />
+
+          <div className="hidden md:flex items-center justify-center gap-3">
+            <Input
+              type="number"
+              min={0}
+              max={SCORE_INPUT_MAX}
+              placeholder="-"
+              className="w-16 h-12 text-center text-lg font-bold"
+              value={prediction.homeScore ?? ""}
+              onChange={(e) => handleScoreInput("home", e.target.value)}
+              disabled={!canEdit}
+            />
+            <span className="text-lg font-bold text-muted-foreground">–</span>
+            <Input
+              type="number"
+              min={0}
+              max={SCORE_INPUT_MAX}
+              placeholder="-"
+              className="w-16 h-12 text-center text-lg font-bold"
+              value={prediction.awayScore ?? ""}
+              onChange={(e) => handleScoreInput("away", e.target.value)}
+              disabled={!canEdit}
+            />
+          </div>
 
           <div className="flex gap-2">
             <Button

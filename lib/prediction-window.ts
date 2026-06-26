@@ -65,3 +65,62 @@ export function formatPredictionWindowMessage(
 export function randomScore(max = SCORE_RANDOM_MAX): number {
   return Math.floor(Math.random() * (max + 1))
 }
+
+export const KNOCKOUT_CLOSE_MINUTES_BEFORE = 30
+
+export function isTbdTeamId(teamId: string): boolean {
+  return teamId.startsWith("tbd_")
+}
+
+export function bothKnockoutTeamsKnown(homeTeamId: string, awayTeamId: string): boolean {
+  return !isTbdTeamId(homeTeamId) && !isTbdTeamId(awayTeamId)
+}
+
+export function getKnockoutMatchWindow(
+  kickoff: Date | string,
+  bothTeamsKnown: boolean
+): PredictionWindow | null {
+  if (!bothTeamsKnown) return null
+
+  const closesAt = new Date(kickoff)
+  closesAt.setMinutes(closesAt.getMinutes() - KNOCKOUT_CLOSE_MINUTES_BEFORE)
+
+  return {
+    opensAt: new Date(0),
+    closesAt,
+  }
+}
+
+export function getKnockoutMatchWindowStatus(
+  now: Date,
+  kickoff: Date | string,
+  bothTeamsKnown: boolean
+): PredictionWindowStatus {
+  if (!bothTeamsKnown) return "not_open"
+
+  const window = getKnockoutMatchWindow(kickoff, bothTeamsKnown)
+  if (!window) return "closed"
+
+  if (now >= window.closesAt) return "closed"
+  return "open"
+}
+
+export function formatKnockoutPredictionWindowMessage(
+  status: PredictionWindowStatus,
+  kickoff: Date | string,
+  bothTeamsKnown: boolean
+): string {
+  if (!bothTeamsKnown) return "Waiting for both teams to be confirmed"
+
+  const window = getKnockoutMatchWindow(kickoff, bothTeamsKnown)
+  if (!window) return "Prediction window unavailable"
+
+  switch (status) {
+    case "not_open":
+      return "Predictions are not open yet"
+    case "open":
+      return `Deadline: ${formatDateTimeDDMMYYYY(window.closesAt)} (30 min before kickoff)`
+    case "closed":
+      return "Prediction window closed"
+  }
+}

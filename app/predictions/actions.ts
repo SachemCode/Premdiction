@@ -2,10 +2,16 @@
 
 import { savePrediction, getMatch, getMatchweek, getMatchesByMatchweek } from "@/lib/db"
 import { revalidatePath } from "next/cache"
-import { saveUserPointerSelections, type PointerType } from "@/lib/pointers"
+import type { PointerType } from "@/lib/pointers"
+import {
+  getUserPointerSelectionsFromDb,
+  saveUserPointerSelectionsInDb,
+} from "@/lib/pointers-store"
 import { requireUser } from "@/lib/auth"
 import {
+  bothKnockoutTeamsKnown,
   getFirstKickoff,
+  getKnockoutMatchWindowStatus,
   getPredictionWindow,
   getPredictionWindowStatus,
   SCORE_INPUT_MAX,
@@ -17,6 +23,15 @@ async function assertPredictionWindowOpen(matchId: string) {
 
   const matchweek = await getMatchweek(match.matchweekId)
   if (!matchweek) throw new Error("Matchweek not found")
+
+  if (matchweek.competition === "WC") {
+    const bothTeamsKnown = bothKnockoutTeamsKnown(match.homeTeamId, match.awayTeamId)
+    const status = getKnockoutMatchWindowStatus(new Date(), match.kickoff, bothTeamsKnown)
+    if (status !== "open") {
+      throw new Error("Prediction window is not open")
+    }
+    return
+  }
 
   const matches = await getMatchesByMatchweek(match.matchweekId)
   const firstKickoff = getFirstKickoff(matches)
@@ -73,7 +88,12 @@ export async function saveUserPointerSelectionsAction(data: {
 
   await assertPredictionWindowOpen(data.matchId)
 
-  const selection = saveUserPointerSelections(user.id, data.matchId, data.selectedPointers, data.details)
+  const selection = await saveUserPointerSelectionsInDb(
+    user.id,
+    data.matchId,
+    data.selectedPointers,
+    data.details
+  )
 
   revalidatePath("/predictions")
   revalidatePath("/leaderboard")
@@ -82,4 +102,14 @@ export async function saveUserPointerSelectionsAction(data: {
   revalidatePath("/events/world-cup/leaderboard")
 
   return selection
+}
+
+export async function getUserPointerSelectionsAction(matchId: string) {
+  const user = await requireUser()
+  const selection = await getUserPointerSelectionsFromDb(user.id, matchId)
+  if (!selection) return null
+  return {
+    selectedPointers: selection.selectedPointers,
+    details: selection.details ?? {},
+  }
 }

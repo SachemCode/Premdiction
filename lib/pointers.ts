@@ -1,28 +1,7 @@
 /**
- * Pointers System
- * 
- * This module manages the special event prediction system (pointers) for matches.
- * Pointers are special events that users can predict for each match, with associated
- * rewards and penalties based on correct/incorrect predictions.
- * 
- * Features:
- * - Pointer definitions with rewards/penalties
- * - User pointer selection management
- * - Match pointer outcome tracking
- * - Points calculation for pointer predictions
- * 
- * Data Structures:
- * - PointerDefinition: Defines a pointer type with its properties
- * - UserPointerSelection: Tracks user's pointer selections for matches
- * - MatchPointerOutcome: Records actual pointer outcomes for matches
- * 
- * Key Functions:
- * - calculatePointerPoints: Calculates points earned from pointer predictions
- * - getUserPointerSelections: Retrieves a user's pointer selections
- * - getMatchPointerOutcomes: Gets actual pointer outcomes for a match
+ * Pointer definitions and outcome scoring (selections persisted via lib/pointers-store.ts).
  */
 
-// Types of pointers available in the game
 export type PointerType =
   | "red_card"
   | "penalty_goal"
@@ -31,47 +10,36 @@ export type PointerType =
   | "goalkeeper_goal"
   | "hat_trick"
   | "motm"
+  | "penalty_shootout"
 
-// Definition of a pointer with its rewards and penalties
 export interface PointerDefinition {
   id: PointerType
   name: string
   description: string
   pointsIfCorrect: number
   pointsIfWrong: number
-  icon: string // Lucide icon name
-  requiresDetails?: boolean // Whether this pointer requires additional details
+  icon: string
+  requiresDetails?: boolean
+  knockoutOnly?: boolean
 }
 
-// A user's pointer selection for a specific match
 export interface UserPointerSelection {
   userId: string
   matchId: string
   selectedPointers: PointerType[]
-  details?: Record<string, string> // Additional details for pointers that require them
+  details?: Record<string, string>
   timestamp: Date
 }
 
-// The outcome of pointers for a specific match
 export interface MatchPointerOutcome {
   matchId: string
   pointerOutcomes: {
     pointerId: PointerType
     occurred: boolean
-    details?: string // Optional details (e.g., player name for MOTM)
+    details?: string
   }[]
 }
 
-/**
- * Available match pointers with their definitions
- * Each pointer has:
- * - Unique identifier
- * - Display name
- * - Description
- * - Points for correct/incorrect predictions
- * - Associated icon
- * - Optional requirement for additional details
- */
 export const MATCH_POINTERS: PointerDefinition[] = [
   {
     id: "red_card",
@@ -84,7 +52,7 @@ export const MATCH_POINTERS: PointerDefinition[] = [
   {
     id: "penalty_goal",
     name: "Penalty Goal",
-    description: "A goal will be scored from a penalty kick",
+    description: "A goal will be scored from a penalty kick during open play",
     pointsIfCorrect: 2,
     pointsIfWrong: -1,
     icon: "target",
@@ -130,69 +98,46 @@ export const MATCH_POINTERS: PointerDefinition[] = [
     icon: "medal",
     requiresDetails: true,
   },
+  {
+    id: "penalty_shootout",
+    name: "Penalty Shootout",
+    description: "The match will be decided by a penalty shootout after extra time",
+    pointsIfCorrect: 3,
+    pointsIfWrong: -1,
+    icon: "target",
+    requiresDetails: true,
+    knockoutOnly: true,
+  },
 ]
 
-// In-memory storage for user pointer selections
-const userPointerSelections: UserPointerSelection[] = []
+const KNOCKOUT_POINTER_IDS: PointerType[] = [
+  "penalty_shootout",
+  "red_card",
+  "penalty_goal",
+  "hat_trick",
+  "motm",
+]
 
-// In-memory storage for match pointer outcomes
+export function getMatchPointers(): PointerDefinition[] {
+  return MATCH_POINTERS.filter((p) => !p.knockoutOnly)
+}
+
+export function getKnockoutPointers(): PointerDefinition[] {
+  return KNOCKOUT_POINTER_IDS.map((id) => MATCH_POINTERS.find((p) => p.id === id)!).filter(Boolean)
+}
+
+export function isPointerType(value: string): value is PointerType {
+  return MATCH_POINTERS.some((p) => p.id === value)
+}
+
 const matchPointerOutcomes: MatchPointerOutcome[] = []
 
-// Function to get all available match pointers
-export function getMatchPointers() {
-  return MATCH_POINTERS
-}
-
-// Function to save a user's pointer selections for a match
-export function saveUserPointerSelections(
-  userId: string,
-  matchId: string,
-  selectedPointers: PointerType[],
-  details?: Record<string, string>,
-): UserPointerSelection {
-  // Check if user already has selections for this match
-  const existingIndex = userPointerSelections.findIndex(
-    (selection) => selection.userId === userId && selection.matchId === matchId,
-  )
-
-  const newSelection = {
-    userId,
-    matchId,
-    selectedPointers,
-    details,
-    timestamp: new Date(),
-  }
-
-  if (existingIndex >= 0) {
-    userPointerSelections[existingIndex] = newSelection
-  } else {
-    userPointerSelections.push(newSelection)
-  }
-
-  return newSelection
-}
-
-// Function to get a user's pointer selections for a match
-export function getUserPointerSelections(userId: string, matchId: string): UserPointerSelection | undefined {
-  return userPointerSelections.find((selection) => selection.userId === userId && selection.matchId === matchId)
-}
-
-// Function to get all user pointer selections for a matchweek
-export function getUserPointerSelectionsByMatchweek(userId: string, _matchweekId: string): UserPointerSelection[] {
-  return userPointerSelections.filter((selection) => selection.userId === userId)
-}
-
-// Function to save pointer outcomes for a match
 export function saveMatchPointerOutcomes(
   matchId: string,
-  outcomes: { pointerId: PointerType; occurred: boolean; details?: string }[],
+  outcomes: { pointerId: PointerType; occurred: boolean; details?: string }[]
 ): MatchPointerOutcome {
   const existingIndex = matchPointerOutcomes.findIndex((outcome) => outcome.matchId === matchId)
-
-  const newOutcome = {
-    matchId,
-    pointerOutcomes: outcomes,
-  }
+  const newOutcome = { matchId, pointerOutcomes: outcomes }
 
   if (existingIndex >= 0) {
     matchPointerOutcomes[existingIndex] = newOutcome
@@ -203,99 +148,98 @@ export function saveMatchPointerOutcomes(
   return newOutcome
 }
 
-// Function to get pointer outcomes for a match
 export function getMatchPointerOutcomes(matchId: string): MatchPointerOutcome | undefined {
   return matchPointerOutcomes.find((outcome) => outcome.matchId === matchId)
 }
 
-/**
- * Calculates pointer points for a user for a specific match
- * 
- * @param userId - The ID of the user
- * @param matchId - The ID of the match
- * @returns Object containing total points and detailed results for each pointer
- */
-export function calculatePointerPoints(
-  userId: string,
-  matchId: string,
-): {
-  totalPoints: number
-  pointerResults: {
-    pointerId: PointerType
-    points: number
-    correct: boolean
-  }[]
-} {
-  // Get user's pointer selections
-  const userSelections = getUserPointerSelections(userId, matchId)
+export function getAllMatchPointerOutcomes(): MatchPointerOutcome[] {
+  return matchPointerOutcomes
+}
 
-  if (!userSelections || userSelections.selectedPointers.length === 0) {
-    return { totalPoints: 0, pointerResults: [] }
+function isPointerCorrect(
+  pointerId: PointerType,
+  outcome: { occurred: boolean; details?: string } | undefined,
+  userDetails?: Record<string, string>
+): boolean {
+  if (!outcome?.occurred) return false
+
+  if (pointerId === "motm" && userDetails?.motm) {
+    return userDetails.motm.toLowerCase() === (outcome.details || "").toLowerCase()
   }
 
-  // Get match outcomes
-  const matchOutcomes = getMatchPointerOutcomes(matchId)
+  if (pointerId === "penalty_shootout" && userDetails?.penalty_shootout_winner) {
+    return userDetails.penalty_shootout_winner === (outcome.details || "")
+  }
+
+  return true
+}
+
+export function calculatePointerPointsFromSelection(
+  userSelections: UserPointerSelection,
+  matchOutcomes: MatchPointerOutcome | undefined
+): {
+  totalPoints: number
+  pointerResults: { pointerId: PointerType; points: number; correct: boolean }[]
+} {
+  if (!userSelections.selectedPointers.length) {
+    return { totalPoints: 0, pointerResults: [] }
+  }
 
   if (!matchOutcomes) {
     return { totalPoints: 0, pointerResults: [] }
   }
 
   let totalPoints = 0
-  const pointerResults: {
-    pointerId: PointerType
-    points: number
-    correct: boolean
-  }[] = []
+  const pointerResults: { pointerId: PointerType; points: number; correct: boolean }[] = []
 
-  // For each selected pointer, check if it occurred in the match
   for (const pointerId of userSelections.selectedPointers) {
     const outcome = matchOutcomes.pointerOutcomes.find((o) => o.pointerId === pointerId)
-    let pointerOccurred = outcome?.occurred || false
-
-    // For MOTM, check if the player name matches
-    if (pointerId === "motm" && outcome?.occurred && userSelections.details?.motm) {
-      // Case-insensitive comparison of player names
-      pointerOccurred = userSelections.details.motm.toLowerCase() === (outcome.details || "").toLowerCase()
-    }
-
-    // Find the pointer definition
+    const correct = isPointerCorrect(pointerId, outcome, userSelections.details)
     const pointerDef = MATCH_POINTERS.find((p) => p.id === pointerId)
 
     if (pointerDef) {
-      const points = pointerOccurred ? pointerDef.pointsIfCorrect : pointerDef.pointsIfWrong
+      const points = correct ? pointerDef.pointsIfCorrect : pointerDef.pointsIfWrong
       totalPoints += points
-
-      pointerResults.push({
-        pointerId,
-        points,
-        correct: pointerOccurred,
-      })
+      pointerResults.push({ pointerId, points, correct })
     }
   }
 
   return { totalPoints, pointerResults }
 }
 
-// Function to calculate total pointer points for a user for a matchweek
-export function calculateMatchweekPointerPoints(userId: string, _matchweekId: string): number {
-  const userSelections = userPointerSelections.filter((selection) => selection.userId === userId)
-
-  let totalPoints = 0
-
-  for (const selection of userSelections) {
-    const { totalPoints: matchPoints } = calculatePointerPoints(userId, selection.matchId)
-    totalPoints += matchPoints
-  }
-
-  return totalPoints
+/** @deprecated Use getUserPointerSelectionsFromDb via server action */
+export function getUserPointerSelections(_userId: string, _matchId: string): UserPointerSelection | undefined {
+  return undefined
 }
 
-// Function to get all user pointer selections
+/** @deprecated Selections are stored in the database */
+export function saveUserPointerSelections(
+  userId: string,
+  matchId: string,
+  selectedPointers: PointerType[],
+  details?: Record<string, string>
+): UserPointerSelection {
+  return { userId, matchId, selectedPointers, details, timestamp: new Date() }
+}
+
+/** @deprecated Use getUserPointerSelectionsForUserFromDb on the server */
 export function getAllUserPointerSelections(): UserPointerSelection[] {
-  return userPointerSelections
+  return []
 }
 
-// Function to get all match pointer outcomes
-export function getAllMatchPointerOutcomes(): MatchPointerOutcome[] {
-  return matchPointerOutcomes
+export function calculatePointerPoints(
+  userId: string,
+  matchId: string
+): ReturnType<typeof calculatePointerPointsFromSelection> {
+  const userSelections = getUserPointerSelections(userId, matchId)
+  if (!userSelections) return { totalPoints: 0, pointerResults: [] }
+  return calculatePointerPointsFromSelection(userSelections, getMatchPointerOutcomes(matchId))
+}
+
+export function calculateMatchweekPointerPoints(_userId: string, _matchweekId: string): number {
+  return 0
+}
+
+export function getUserPointerSelectionsByMatchweek(_userId: string, _matchweekId: string): UserPointerSelection[] {
+  return []
 }
