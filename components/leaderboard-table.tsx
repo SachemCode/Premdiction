@@ -23,9 +23,14 @@ import type { CompetitionCode } from "@/lib/competition-config"
 type LeaderboardTableProps = {
   matchweekId: string
   competition?: CompetitionCode
+  privateLeagueId?: string
 }
 
-export default function LeaderboardTable({ matchweekId, competition = "PL" }: LeaderboardTableProps) {
+export default function LeaderboardTable({
+  matchweekId,
+  competition = "PL",
+  privateLeagueId,
+}: LeaderboardTableProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [entries, setEntries] = useState<LeaderboardEntry[]>([])
@@ -41,6 +46,7 @@ export default function LeaderboardTable({ matchweekId, competition = "PL" }: Le
       try {
         const params = new URLSearchParams({ matchweekId })
         if (competition) params.set("competition", competition)
+        if (privateLeagueId) params.set("league", privateLeagueId)
         const res = await fetch(`/api/leaderboard?${params.toString()}`)
         if (!res.ok) throw new Error("Failed to load leaderboard data")
         const data = await res.json()
@@ -82,7 +88,7 @@ export default function LeaderboardTable({ matchweekId, competition = "PL" }: Le
     return () => {
       cancelled = true
     }
-  }, [matchweekId, competition])
+  }, [matchweekId, competition, privateLeagueId])
 
   if (loading) {
     return <div className="text-center py-12 text-muted-foreground">Loading matchweek leaderboard...</div>

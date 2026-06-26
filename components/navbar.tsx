@@ -150,7 +150,15 @@ export default function Navbar({ wcEventEnabled = false }: { wcEventEnabled?: bo
             href="/leaderboard"
             className={navLinkClass(pathname?.startsWith("/leaderboard") ?? false)}
           >
-            Leaderboard
+            Rankings
+          </Link>
+          <Link
+            href="/leagues"
+            className={navLinkClass(
+              (pathname?.startsWith("/leagues") || pathname?.startsWith("/join")) ?? false
+            )}
+          >
+            Leagues
           </Link>
           {wcEventEnabled && (
             <WorldCupEntryLink

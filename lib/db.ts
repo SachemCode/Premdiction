@@ -24,6 +24,10 @@ import {
 } from "./matchweeks"
 import { recalculatePredictionPointsForMatch } from "./predictions"
 import { CORRECT_RESULT_POINTS, EXACT_SCORE_POINTS } from "./prediction-points"
+import {
+  getPrivateLeagueCompetitions,
+  getPrivateLeagueMemberUserIds,
+} from "./private-leagues"
 
 export type { User, Team, Match, Matchweek, Prediction } from "./types"
 
@@ -198,13 +202,14 @@ export async function updateMatchResult(matchId: string, homeScore: number, away
 
 export async function getLeaderboardByMatchweek(
   matchweekId: string,
-  matchIdsByMatchweek?: Map<string, string[]>
+  matchIdsByMatchweek?: Map<string, string[]>,
+  options?: LeaderboardQueryOptions
 ) {
   const matchIds = matchIdsByMatchweek
     ? (matchIdsByMatchweek.get(matchweekId) ?? [])
     : (await getMatchesByMatchweekFromDb(matchweekId)).map((m) => m.id)
 
-  return computeLeaderboard(matchIds)
+  return computeLeaderboard(matchIds, options)
 }
 
 export async function getMatchIdsByMatchweek(competition?: CompetitionCode): Promise<Map<string, string[]>> {
@@ -220,14 +225,33 @@ export async function getMatchIdsByMatchweek(competition?: CompetitionCode): Pro
   return map
 }
 
-async function computeLeaderboard(matchIds: string[]) {
-  if (matchIds.length === 0) return []
+async function computeLeaderboard(
+  matchIds: string[],
+  options?: { userIds?: string[]; includeAllUsers?: boolean }
+) {
+  const scopedUserIds = options?.userIds
 
-  const matchweekPredictions = await prisma.prediction.findMany({
-    where: { matchId: { in: matchIds } },
-  })
+  if (matchIds.length === 0 && !scopedUserIds?.length && !options?.includeAllUsers) {
+    return []
+  }
 
-  const userIds = [...new Set(matchweekPredictions.map((p) => p.userId))]
+  const matchweekPredictions =
+    matchIds.length > 0
+      ? await prisma.prediction.findMany({
+          where: { matchId: { in: matchIds } },
+        })
+      : []
+
+  let userIds: string[]
+  if (scopedUserIds?.length) {
+    userIds = scopedUserIds
+  } else if (options?.includeAllUsers) {
+    const allUsers = await prisma.user.findMany({ select: { id: true } })
+    userIds = allUsers.map((u) => u.id)
+  } else {
+    userIds = [...new Set(matchweekPredictions.map((p) => p.userId))]
+  }
+
   const dbUsers = userIds.length
     ? await prisma.user.findMany({ where: { id: { in: userIds } } })
     : []
@@ -238,7 +262,18 @@ async function computeLeaderboard(matchIds: string[]) {
     { userId: string; points: number; exactScores: number; correctResults: number; user?: User; rank?: number }
   > = {}
 
+  for (const userId of userIds) {
+    byUser[userId] = {
+      userId,
+      points: 0,
+      exactScores: 0,
+      correctResults: 0,
+      user: userMap.get(userId),
+    }
+  }
+
   for (const pred of matchweekPredictions) {
+    if (scopedUserIds?.length && !scopedUserIds.includes(pred.userId)) continue
     if (!byUser[pred.userId]) {
       byUser[pred.userId] = {
         userId: pred.userId,
@@ -268,8 +303,14 @@ export type OverallLeaderboardData = {
   teams: Record<string, Team | null | undefined>
 }
 
+export type LeaderboardQueryOptions = {
+  userIds?: string[]
+  includeAllUsers?: boolean
+}
+
 export async function getOverallLeaderboardData(
-  competition?: CompetitionCode
+  competition?: CompetitionCode,
+  options?: LeaderboardQueryOptions
 ): Promise<OverallLeaderboardData> {
   const code = getCompetitionCodeFromContext(competition)
   const [matchweeks, visibleMatchweeks, matchIdsByMatchweek] = await Promise.all([
@@ -279,7 +320,7 @@ export async function getOverallLeaderboardData(
   ])
 
   const leaderboards = await Promise.all(
-    matchweeks.map((mw) => getLeaderboardByMatchweek(mw.id, matchIdsByMatchweek))
+    matchweeks.map((mw) => getLeaderboardByMatchweek(mw.id, matchIdsByMatchweek, options))
   )
 
   const userTeamIds = new Set<string>()
@@ -296,6 +337,20 @@ export async function getOverallLeaderboardData(
   })
 
   return { matchweeks, visibleMatchweeks, leaderboards, teams }
+}
+
+export async function getPrivateLeagueLeaderboardData(
+  leagueId: string,
+  competition?: CompetitionCode
+): Promise<OverallLeaderboardData & { competitions: CompetitionCode[] }> {
+  const comps = await getPrivateLeagueCompetitions(leagueId)
+  const code = competition ?? comps[0] ?? "PL"
+  if (!comps.includes(code)) {
+    throw new Error("This competition is not enabled for this league")
+  }
+  const userIds = await getPrivateLeagueMemberUserIds(leagueId)
+  const data = await getOverallLeaderboardData(code, { userIds })
+  return { ...data, competitions: comps }
 }
 
 export async function updateMatchweek(matchweekId: string, updates: Partial<Matchweek>) {

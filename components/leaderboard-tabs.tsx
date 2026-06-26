@@ -21,6 +21,7 @@ type LeaderboardTabsProps = {
   visibleMatchweeks: Matchweek[]
   competition?: CompetitionCode
   initialOverallData?: MainLeaderboardInitialData
+  privateLeagueId?: string
 }
 
 function TabChip({
@@ -58,6 +59,7 @@ export default function LeaderboardTabs({
   visibleMatchweeks,
   competition = "PL",
   initialOverallData,
+  privateLeagueId,
 }: LeaderboardTabsProps) {
   const [activeTab, setActiveTab] = useState("main")
 
@@ -125,7 +127,11 @@ export default function LeaderboardTabs({
             {new Date(activeMatchweek.startDate).toLocaleDateString()} –{" "}
             {new Date(activeMatchweek.endDate).toLocaleDateString()}
           </p>
-          <LeaderboardTable matchweekId={activeMatchweek.id} competition={competition} />
+          <LeaderboardTable
+            matchweekId={activeMatchweek.id}
+            competition={competition}
+            privateLeagueId={privateLeagueId}
+          />
         </div>
       )}
     </div>
