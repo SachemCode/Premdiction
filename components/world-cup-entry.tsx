@@ -67,13 +67,13 @@ export function WorldCupEntryLink({ variant, className, active = false }: WorldC
     <Link
       href={WC_HREF}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-opacity hover:opacity-90",
-        wcButtonBg,
-        active && "ring-2 ring-pl-purple/40 ring-offset-1",
+        "pl-nav-bar-link inline-flex items-center gap-1 rounded-sm px-1.5 -mx-0.5",
+        "text-amber-200 hover:text-amber-100 font-semibold tracking-wide uppercase text-[10px] md:text-xs",
+        active && "pl-nav-bar-link-active text-amber-100",
         className
       )}
     >
-      <FifaWorldCupLabel size="sm" />
+      <span>FIFA World Cup</span>
     </Link>
   )
 }

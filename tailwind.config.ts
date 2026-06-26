@@ -95,6 +95,7 @@ const config = {
         "pl-gradient-alt": "linear-gradient(to right, #00FF87, #04F5FF)",
         "pl-lavender-stripes":
           "repeating-linear-gradient(0deg, rgba(232, 223, 238, 0.7) 0px, rgba(232, 223, 238, 0.7) 20px, rgba(246, 240, 250, 0.7) 20px, rgba(246, 240, 250, 0.7) 40px)",
+        "pl-nav-hero": "linear-gradient(to right, #04F5FF 0%, #00FF87 35%, #7E3BA1 70%, #FF2882 100%)",
       },
     },
   },

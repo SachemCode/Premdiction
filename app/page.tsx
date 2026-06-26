@@ -18,7 +18,7 @@ export default async function Home() {
   return (
     <div className="space-y-8 md:space-y-16">
       <section className="relative py-12 md:py-20 -mt-6 rounded-b-3xl overflow-hidden">
-        <div className="absolute inset-0 bg-pl-lavender-stripes dark:bg-pl-gradient dark:opacity-10 pointer-events-none"></div>
+        <div className="absolute inset-0 pl-zigzag-bg dark:bg-pl-gradient dark:opacity-10 pointer-events-none"></div>
         <div className="relative z-10 container mx-auto px-4 flex flex-col items-center text-center">
           <HomeHeroLogo />
 

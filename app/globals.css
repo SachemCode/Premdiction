@@ -90,9 +90,10 @@
 
   /* Light mode background */
   body {
-    background-image: url("/pl-stripes.svg");
+    background-color: #e8dfee;
+    background-image: url("/pl-zigzag-stripes.svg");
     background-attachment: fixed;
-    background-size: cover;
+    background-size: 320px 320px;
   }
 
   /* Dark mode background */
@@ -184,6 +185,50 @@
 
   .pl-nav-link-active::after {
     @apply w-full;
+  }
+
+  .pl-nav-bar {
+    @apply bg-[#241038] text-white;
+  }
+
+  .dark .pl-nav-bar {
+    @apply bg-[#1a0c2b];
+  }
+
+  .pl-nav-bar-link {
+    @apply relative inline-flex items-center px-1 text-xs md:text-sm font-medium text-white/85 whitespace-nowrap transition-colors hover:text-white;
+  }
+
+  .pl-nav-bar-link::after {
+    content: "";
+    @apply absolute left-0 right-0 bottom-0 h-0 w-full bg-white transition-all duration-200;
+  }
+
+  .pl-nav-bar-link:hover::after {
+    @apply h-0.5;
+  }
+
+  .pl-nav-bar-link-active {
+    @apply text-white font-semibold;
+  }
+
+  .pl-nav-bar-link-active::after {
+    @apply h-1;
+  }
+
+  .pl-zigzag-bg {
+    background-color: #e8dfee;
+    background-image: url("/pl-zigzag-stripes.svg");
+    background-size: 320px 320px;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 
   .trend-up {
